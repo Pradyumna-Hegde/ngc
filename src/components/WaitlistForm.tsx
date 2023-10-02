@@ -1,42 +1,46 @@
-import { FormEvent, useState } from "react";
 import { genderList, answerList, backgroundStatus } from "./StaticValues.ts";
+import { FieldValues, useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
+
+const schema = z.object({
+  fullName: z.string().min(3),
+  gender: z.string(),
+  phone: z.number().max(14),
+  email: z.string().max(25),
+  qna: z.string(),
+  status: z.string(),
+  graduationYear: z.number().max(4),
+});
+
+type FormData = z.infer<typeof schema>;
 
 const WaitlistForm = () => {
-  const [person, setPerson] = useState({
-    fullName: "",
-    gender: "",
-    phone: "",
-    email: "",
-    qna: "",
-    status: "",
-    graduationYear: "",
-  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const onSubmit = handleSubmit((data: FieldValues) => console.log(data));
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    console.log(person);
-  };
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={onSubmit}>
       {/* Full Name Input Field */}
       <div className="mb-3">
         <label htmlFor="full-name" className="form-label">
           Full Name
         </label>
         <input
-          onChange={(event) =>
-            setPerson({ ...person, fullName: event?.target.value })
-          }
-          value={person.fullName}
+          {...register("fullName")}
           type="text"
           id="full-name"
           className="form-control"
-          autoComplete="full-name"
         />
-        <p className="text-secondary" style={{ fontSize: "12px" }}>
-          Please fill out your official name here. Please do not provide your
-          Discord or social media name *
-        </p>
+        {errors.fullName && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            {errors.fullName.message}
+          </p>
+        )}
       </div>
 
       {/* Gender Input Field */}
@@ -45,20 +49,21 @@ const WaitlistForm = () => {
           Gender
         </label>
         <select
-          autoComplete="gender"
+          {...register("gender", { required: true })}
           id="gender"
           className="form-select"
-          onChange={(event) =>
-            setPerson({ ...person, gender: event?.target.value })
-          }
         >
-          <option defaultValue={"Select Gender"}>Select gender</option>
           {genderList.map((gender) => (
             <option key={gender} value={gender}>
               {gender}
             </option>
           ))}
         </select>
+        {errors.gender && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            {errors.gender.message}
+          </p>
+        )}
       </div>
 
       {/* Phone Number Input Field */}
@@ -67,18 +72,17 @@ const WaitlistForm = () => {
           Phone Number
         </label>
         <input
-          onChange={(event) =>
-            setPerson({ ...person, phone: event?.target.value })
-          }
-          value={person.phone}
+          {...register("phone", { required: true })}
           type="tel"
           id="phone"
           className="form-control"
-          autoComplete="phone"
         />
-        <p className="text-secondary" style={{ fontSize: "12px" }}>
-          active phone number *
-        </p>
+
+        {errors.phone?.type === "required" && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            Required *
+          </p>
+        )}
       </div>
 
       {/* Email Input Field */}
@@ -87,40 +91,39 @@ const WaitlistForm = () => {
           Email
         </label>
         <input
-          onChange={(event) =>
-            setPerson({ ...person, email: event?.target.value })
-          }
+          {...register("email", { required: true })}
           type="email"
           id="email"
-          value={person.email}
-          autoComplete="email"
           className="form-control"
         />
-        <p className="text-secondary" style={{ fontSize: "12px" }}>
-          please share your active email address *
-        </p>
+        {errors.email?.type === "required" && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            Required *
+          </p>
+        )}
       </div>
 
-      {/* Why Input Field */}
+      {/* qna Input Field */}
       <div className="mb-3">
         <label htmlFor="qna" className="form-label">
           Why do you want to join the camp?
         </label>
         <select
-          autoComplete="qna"
+          {...register("qna", { required: true })}
           id="qna"
           className="form-select"
-          onChange={(event) =>
-            setPerson({ ...person, qna: event?.target.value })
-          }
         >
-          <option defaultValue={"Select"}>Select</option>
           {answerList.map((answer) => (
             <option key={answer} value={answer}>
               {answer}
             </option>
           ))}
         </select>
+        {errors.qna?.type === "required" && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            Required *
+          </p>
+        )}
       </div>
 
       {/* current educational/professional status Input Field */}
@@ -129,20 +132,21 @@ const WaitlistForm = () => {
           What is your current educational/professional status?
         </label>
         <select
-          autoComplete="status"
+          {...register("status", { required: true })}
           id="status"
           className="form-select"
-          onChange={(event) =>
-            setPerson({ ...person, status: event?.target.value })
-          }
         >
-          <option defaultValue={"Select Status"}>Select Status</option>
           {backgroundStatus.map((answer) => (
             <option key={answer} value={answer}>
               {answer}
             </option>
           ))}
         </select>
+        {errors.status?.type === "required" && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            Required *
+          </p>
+        )}
       </div>
 
       {/* Year of Graduation Input Field */}
@@ -151,15 +155,16 @@ const WaitlistForm = () => {
           Year of Graduation
         </label>
         <input
-          onChange={(event) =>
-            setPerson({ ...person, graduationYear: event?.target.value })
-          }
-          value={person.graduationYear}
+          {...register("graduationYear", { required: true })}
           type="number"
           id="graduation-year"
           className="form-control"
-          autoComplete="graduation-year"
         />
+        {errors.graduationYear?.type === "required" && (
+          <p className="text-danger" style={{ fontSize: "12px" }}>
+            Required *
+          </p>
+        )}
         <p className="text-secondary" style={{ fontSize: "12px" }}>
           Your degree does not define your success. We need it to prepare you
           better. Please write your year of graduation (latest degree). eg:
